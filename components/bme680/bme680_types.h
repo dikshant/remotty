@@ -1,6 +1,6 @@
 /*
  * Driver for Bosch Sensortec BME680 digital temperature, humidity, pressure
- * and gas sensor connected to I2C or SPI
+ * and gas sensor connected to I2C
  *
  * This driver is for the usage with the ESP8266 and FreeRTOS (esp-open-rtos)
  * [https://github.com/SuperHouse/esp-open-rtos]. It is also working with ESP32
@@ -174,10 +174,8 @@ typedef struct {
 
     int       error_code;      // contains the error code of last operation
 
-    uint8_t   bus;             // I2C = x, SPI = 1
-    uint8_t   addr;            // I2C = slave address, SPI = 0
-    uint8_t   cs;              // ESP8266, ESP32: GPIO used as SPI CS
-                               // __linux__: device index
+    uint8_t   bus;             // I2C = x
+    uint8_t   addr;            // I2C = slave address
 
     bool      meas_started;    // indicates whether measurement started
     uint8_t   meas_status;     // last sensor status (for internal use only)

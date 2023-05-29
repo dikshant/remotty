@@ -1,6 +1,5 @@
 /**
- * Simple example with one sensor connected either to I2C bus 0 or
- * SPI bus 1.
+ * Simple example with one sensor connected either to I2C bus 0
  *
  * Harware configuration:
  *
@@ -13,21 +12,9 @@
  *   |   GPIO 13 (SDA) <---> SDA      |
  *   +-----------------+   +----------+
  *
- *   SPI   
- *
- *   +-----------------+   +----------+      +-----------------+   +----------+
- *   | ESP8266         |   | BME680   |      | ESP32           |   | BME680   |
- *   |                 |   |          |      |                 |   |          |
- *   |   GPIO 14 (SCK) ----> SCK      |      |   GPIO 16 (SCK) ----> SCK      |
- *   |   GPIO 13 (MOSI)----> SDI      |      |   GPIO 17 (MOSI)----> SDI      |
- *   |   GPIO 12 (MISO)<---- SDO      |      |   GPIO 18 (MISO)<---- SDO      |
- *   |   GPIO 2  (CS)  ----> CS       |      |   GPIO 19 (CS)  ----> CS       |
- *   +-----------------+    +---------+      +-----------------+   +----------+
  */
 
 /* -- use following constants to define the example mode ----------- */
-
-// #define SPI_USED
 
 /* -- includes ----------------------------------------------------- */
 
@@ -40,24 +27,10 @@
 // user task stack depth for ESP32
 #define TASK_STACK_DEPTH 2048
 
-// SPI interface definitions for ESP32
-#define SPI_BUS       HSPI_HOST
-#define SPI_SCK_GPIO  16
-#define SPI_MOSI_GPIO 17
-#define SPI_MISO_GPIO 18
-#define SPI_CS_GPIO   19
-
 #else  // ESP8266 (esp-open-rtos)
 
 // user task stack depth for ESP8266
 #define TASK_STACK_DEPTH 256
-
-// SPI interface definitions for ESP8266
-#define SPI_BUS       1
-#define SPI_SCK_GPIO  14
-#define SPI_MOSI_GPIO 13
-#define SPI_MISO_GPIO 12
-#define SPI_CS_GPIO   2   // GPIO 15, the default CS of SPI bus 1, can't be used
 
 #endif  // ESP_PLATFORM
 
@@ -118,23 +91,12 @@ void user_init(void)
     vTaskDelay(1);
     
     /** -- MANDATORY PART -- */
-
-    #ifdef SPI_USED
-
-    spi_bus_init (SPI_BUS, SPI_SCK_GPIO, SPI_MISO_GPIO, SPI_MOSI_GPIO);
-
-    // init the sensor connected to SPI_BUS with SPI_CS_GPIO as chip select.
-    sensor = bme680_init_sensor (SPI_BUS, 0, SPI_CS_GPIO);
     
-    #else  // I2C
-
     // Init all I2C bus interfaces at which BME680 sensors are connected
     i2c_init(I2C_BUS, I2C_SCL_PIN, I2C_SDA_PIN, I2C_FREQ);
 
     // init the sensor with slave address BME680_I2C_ADDRESS_2 connected to I2C_BUS.
     sensor = bme680_init_sensor (I2C_BUS, BME680_I2C_ADDRESS_2, 0);
-
-    #endif  // SPI_USED
 
     if (sensor)
     {

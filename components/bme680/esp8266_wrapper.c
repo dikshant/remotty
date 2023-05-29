@@ -7,9 +7,6 @@
 #include <sys/time.h>
 #include <string.h>
 
-#include "driver/spi_master.h"
-#include "driver/spi_common.h"
-
 #include "driver/i2c.h"
 
 #include "esp8266_wrapper.h"
@@ -86,71 +83,6 @@ int i2c_slave_read (uint8_t bus, uint8_t addr, const uint8_t *reg,
     i2c_cmd_link_delete(cmd);
 
     return err;
-}
-
-// esp-open-rtos SPI interface wrapper
-
-#define SPI_MAX_BUS 3   // ESP32 features three SPIs (SPI_HOST, HSPI_HOST and VSPI_HOST)
-#define SPI_MAX_CS  34  // GPIO 33 is the last port that can be used as output
-
-spi_device_handle_t spi_handles[SPI_MAX_CS] = { 0 };
-
-bool spi_bus_init (spi_host_device_t host, uint8_t sclk , uint8_t miso, uint8_t mosi)
-{
-    spi_bus_config_t spi_bus_cfg = {
-        .miso_io_num=miso,
-        .mosi_io_num=mosi,
-        .sclk_io_num=sclk,
-        .quadwp_io_num=-1,
-        .quadhd_io_num=-1
-    };
-    return (spi_bus_initialize(host, &spi_bus_cfg, 1) == ESP_OK);
-}
-
-bool spi_device_init (uint8_t bus, uint8_t cs)
-{
-    if (bus >= SPI_MAX_BUS || cs >= SPI_MAX_CS)
-        return false;
-        
-    if ((spi_handles[cs] = malloc (sizeof(spi_device_handle_t))) == 0)
-        return false;
-
-    spi_device_interface_config_t dev_cfg = {
-        .clock_speed_hz = 1e6,   // 1 MHz clock
-        .mode = 0,               // SPI mode 0
-        .spics_io_num = cs,      // CS GPIO
-        .queue_size = 1,
-        .flags = 0,              // no flags set
-        .command_bits = 0,       // no command bits used
-        .address_bits = 0,       // register address is first byte in MOSI
-        .dummy_bits = 0          // no dummy bits used
-    };
-
-    if (spi_bus_add_device(bus, &dev_cfg, &(spi_handles[cs])) != ESP_OK)
-    {
-        free (spi_handles[cs]);
-        return false;
-    }
-    
-    return true;
-}
-
-size_t spi_transfer_pf (uint8_t bus, uint8_t cs, const uint8_t *mosi, uint8_t *miso, uint16_t len)
-{
-    spi_transaction_t spi_trans;
-
-    if (cs >= SPI_MAX_CS)
-        return 0;
-
-    memset(&spi_trans, 0, sizeof(spi_trans)); // zero out spi_trans;
-    spi_trans.tx_buffer = mosi;
-    spi_trans.rx_buffer = miso;
-    spi_trans.length=len*8;
-    
-    if (spi_device_transmit(spi_handles[cs], &spi_trans) != ESP_OK)
-        return 0;
-
-    return len;
 }
 
 #endif  // ESP32 (ESP-IDF)

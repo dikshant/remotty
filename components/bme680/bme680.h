@@ -1,6 +1,6 @@
 /*
  * Driver for Bosch Sensortec BME680 digital temperature, humidity, pressure
- * and gas sensor connected to I2C or SPI
+ * and gas sensor connected to I2C
  *
  * This driver is for the usage with the ESP8266 and FreeRTOS (esp-open-rtos)
  * [https://github.com/SuperHouse/esp-open-rtos]. It is also working with ESP32
@@ -65,16 +65,12 @@
 #define BME680_INT_ERROR_MASK          0x000f
 #define BME680_DRV_ERROR_MASK          0xfff0
 
-// Error codes for I2C and SPI interfaces ORed with BME680 driver error codes
+// Error codes for I2C interfaces ORed with BME680 driver error codes
 #define BME680_I2C_READ_FAILED         1
 #define BME680_I2C_WRITE_FAILED        2
 #define BME680_I2C_BUSY                3
-#define BME680_SPI_WRITE_FAILED        4
-#define BME680_SPI_READ_FAILED         5
-#define BME680_SPI_BUFFER_OVERFLOW     6
-#define BME680_SPI_SET_PAGE_FAILED     7
 
-// BME680 driver error codes ORed with error codes for I2C and SPI interfaces
+// BME680 driver error codes ORed with error codes for I2C
 #define BME680_RESET_CMD_FAILED        ( 1 << 8)
 #define BME680_WRONG_CHIP_ID           ( 2 << 8)
 #define BME680_READ_CALIB_DATA_FAILED  ( 3 << 8)
@@ -131,21 +127,14 @@ extern "C"
  * - Filter size for pressure and temperature is iir_size 3
  * - Heater profile 0 with 320 degree C and 150 ms duration
  *
- * The sensor can be connected either to an I2C or a SPI bus. In both cases,
- * the parameter *bus* specifies the ID of the corresponding bus. Please note
- * that in case of SPI, bus 1 has to be used since bus 0 is used for system
- * flash memory.
+ * The sensor can be connected either to an I2C. The parameter *bus* specifies the ID of the corresponding bus.
  *
  * If parameter *addr* is greater than 0, it defines a valid I2C slave address
  * and the sensor is connected to an I2C bus. In that case parameter *cs* is
  * ignored.
  *
- * If parameter *addr* is 0, the sensor is connected to a SPI bus. In that
- * case, parameter *cs* defines the GPIO used as CS signal
- *
- * @param   bus     I2C or SPI bus at which BME680 sensor is connected
- * @param   addr    I2C addr of the BME680 sensor, 0 for SPI
- * @param   cs      SPI CS GPIO, ignored for I2C
+ * @param   bus     I2Cbus at which BME680 sensor is connected
+ * @param   addr    I2C addr of the BME680 sensor
  * @return          pointer to sensor data structure, or NULL on error
  */
 bme680_sensor_t* bme680_init_sensor (uint8_t bus, uint8_t addr, uint8_t cs);
